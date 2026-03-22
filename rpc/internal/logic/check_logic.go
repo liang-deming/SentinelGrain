@@ -162,8 +162,8 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 		}, nil
 	}
 
-	// 缓存结果到L1
-	if l.svcCtx.L1Cache != nil {
+	// 缓存结果到L1 (仅缓存成功的Redis响应)
+	if err == nil && l.svcCtx.L1Cache != nil {
 		result := resultPool.Get().(*cache.CheckResult)
 		result.Allowed = allowed
 		result.Remaining = remaining

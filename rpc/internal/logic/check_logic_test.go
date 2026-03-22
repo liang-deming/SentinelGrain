@@ -36,6 +36,9 @@ func TestCheckLogic_Check(t *testing.T) {
 	// 创建服务上下文
 	svcCtx := svc.NewServiceContext(conf)
 
+	// 清理旧规则
+	ruleTable = sync.Map{}
+	
 	// 设置测试规则
 	SetRule("test_app", "test_api", 5, 1) // 每秒5个请求
 
@@ -127,8 +130,11 @@ func TestCheckLogic_RedisTimeout(t *testing.T) {
 	svcCtx := svc.NewServiceContext(conf)
 	logic := NewCheckLogic(context.Background(), svcCtx)
 
+	// 设置测试规则
+	SetRule("test_app", "test_api", 5, 1)
+
 	// 模拟Redis延迟
-	s.FastForward(time.Millisecond * 10)
+	s.SetError("LOADING Redis is loading the dataset in memory")
 
 	resp, err := logic.Check(&pb.CheckRequest{
 		AppId:     "test_app",
