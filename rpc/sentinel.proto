@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sentinel;
+option go_package = "./pb";
+
+message CheckRequest {
+    string app_id = 1;      // 应用标识
+    string resource = 2;    // API Path 或 Service Name
+    string dimension = 3;   // 用户ID、IP 等组合 Key
+    int64  cost = 4;       // 本次消耗的配额度
+}
+
+message CheckResponse {
+    bool   allowed = 1;     // 是否放行
+    int64  remaining = 2;   // 剩余配额
+    string reason = 3;      // 拒绝原因（如：RateLimitExceeded）
+}
+
+service Sentinel {
+    rpc Check(CheckRequest) returns (CheckResponse);
+}
