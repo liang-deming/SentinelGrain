@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	// DefaultThreshold 默认全局阈值(每秒)
-	DefaultThreshold = 100
+	// DefaultThreshold 默认全局阈值(每秒) - MVP选项：使用全局默认阈值作为兜底
+	DefaultThreshold int64 = 100
 	// DefaultPeriod 默认窗口期(秒)
-	DefaultPeriod = 1
+	DefaultPeriod int64 = 1
 )
 
 var (
@@ -62,7 +62,7 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 			return &pb.CheckResponse{
 				Allowed:   result.Allowed,
 				Remaining: result.Remaining,
-				Reason:    errors.RateLimitExceeded,
+				Reason:    map[bool]string{true: "", false: errors.RateLimitExceeded}[result.Allowed],
 			}, nil
 		}
 	}

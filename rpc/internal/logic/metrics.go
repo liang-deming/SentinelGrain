@@ -6,23 +6,23 @@ import (
 )
 
 var (
-	requestTotal = metric.NewCounterVec(
-		"sentinel_request_total",
-		"Total number of requests",
-		[]string{"app_id", "resource"},
-	)
+	requestTotal = metric.NewCounterVec(&metric.CounterVecOpts{
+		Name: "sentinel_request_total",
+		Help: "Total number of requests",
+		Labels: []string{"app_id", "resource"},
+	})
 
-	rejectTotal = metric.NewCounterVec(
-		"sentinel_reject_total",
-		"Total number of rejected requests",
-		[]string{"app_id", "resource"},
-	)
+	rejectTotal = metric.NewCounterVec(&metric.CounterVecOpts{
+		Name: "sentinel_reject_total",
+		Help: "Total number of rejected requests",
+		Labels: []string{"app_id", "resource"},
+	})
 
-	l1HitTotal = metric.NewCounterVec(
-		"sentinel_l1_hit_total",
-		"Total number of L1 cache hits",
-		[]string{"app_id", "resource"},
-	)
+	l1HitTotal = metric.NewCounterVec(&metric.CounterVecOpts{
+		Name: "sentinel_l1_hit_total",
+		Help: "Total number of L1 cache hits",
+		Labels: []string{"app_id", "resource"},
+	})
 
 	checkLatency = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{

@@ -110,7 +110,7 @@ func TestCheckLogic_RedisTimeout(t *testing.T) {
 	logic := NewCheckLogic(context.Background(), svcCtx)
 
 	// 模拟Redis延迟
-	s.SetDelay(time.Millisecond * 10)
+	s.FastForward(time.Millisecond * 10)
 
 	resp, err := logic.Check(&pb.CheckRequest{
 		AppId:     "test_app",
