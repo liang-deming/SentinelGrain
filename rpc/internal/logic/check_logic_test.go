@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 	"testing"
-	"time"
+	"sync"
 
 	"SentinelGrain/common/errors"
 	"SentinelGrain/rpc/internal/config"
