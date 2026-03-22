@@ -36,6 +36,9 @@ func TestCheckLogic_Check(t *testing.T) {
 	// 创建服务上下文
 	svcCtx := svc.NewServiceContext(conf)
 
+	// 设置测试规则
+	SetRule("test_app", "test_api", 5, 1) // 每秒5个请求
+
 	// 创建测试用例
 	tests := []struct {
 		name        string
