@@ -16,3 +16,7 @@ L1Cache:
   TTL: 500         # 本地缓存TTL(毫秒)
 
 Prometheus: true    # 启用Prometheus指标收集
+Telemetry:
+  Name: sentinel.rpc
+  Endpoint: 0.0.0.0:4000
+  Path: /metrics

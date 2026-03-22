@@ -67,8 +67,6 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 	
 	// 构建限流Key
 	key := fmt.Sprintf("%s:%s:%s", in.AppId, in.Resource, in.Dimension)
-	
-	startTime := time.Now()
 
 	// 先查L1缓存
 	if l.svcCtx.L1Cache != nil {
@@ -114,20 +112,27 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 		period = r.Period
 	} else {
 		// MVP选项：无规则时默认拒绝
-		if DefaultReject {
-			l.Infow("No rule found, rejected by default",
-				logx.Field("app_id", in.AppId),
-				logx.Field("resource", in.Resource),
-				logx.Field("latency_ms", time.Since(startTime).Milliseconds()),
-			)
-			return &pb.CheckResponse{
-				Allowed: false,
-				Reason:  errors.RuleNotFound,
-			}, nil
-		}
+		allowed := !DefaultReject
+		l.Infow("No rule found",
+			logx.Field("app_id", in.AppId),
+			logx.Field("resource", in.Resource),
+			logx.Field("allowed", allowed),
+			logx.Field("latency_ms", time.Since(startTime).Milliseconds()),
+		)
+
+		// 异步记录指标
+		threading.GoSafe(func() {
+			requestTotal.Inc(in.AppId, in.Resource)
+			if !allowed {
+				rejectTotal.Inc(in.AppId, in.Resource)
+			}
+			checkLatency.WithLabelValues(in.AppId, in.Resource).
+				Observe(time.Since(startTime).Seconds())
+		})
+
 		return &pb.CheckResponse{
-			Allowed: true,
-			Reason:  "",
+			Allowed: allowed,
+			Reason:  map[bool]string{true: "", false: errors.RuleNotFound}[allowed],
 		}, nil
 	}
 

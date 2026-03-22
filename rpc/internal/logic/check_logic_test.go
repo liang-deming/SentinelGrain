@@ -40,6 +40,21 @@ func TestCheckLogic_Check(t *testing.T) {
 	SetRule("test_app", "test_api", 5, 1) // 每秒5个请求
 
 	// 创建测试用例
+	// 设置测试规则前先测试无规则场景
+	t.Run("No rule should be rejected", func(t *testing.T) {
+		logic := NewCheckLogic(context.Background(), svcCtx)
+		resp, err := logic.Check(&pb.CheckRequest{
+			AppId:     "no_rule_app",
+			Resource:  "no_rule_api",
+			Dimension: "test_user",
+			Cost:     1,
+		})
+		
+		assert.NoError(t, err)
+		assert.False(t, resp.Allowed)
+		assert.Equal(t, errors.RuleNotFound, resp.Reason)
+	})
+
 	tests := []struct {
 		name        string
 		req         *pb.CheckRequest
@@ -74,7 +89,7 @@ func TestCheckLogic_Check(t *testing.T) {
 				AppId:     "test_app",
 				Resource: "test_api",
 				Dimension: "test_user",
-				Cost:     DefaultThreshold + 1,
+				Cost:     6, // Exceeds the rule threshold of 5
 			},
 			wantAllowed: false,
 			wantReason:  errors.RateLimitExceeded,
