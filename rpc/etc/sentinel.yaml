@@ -1,6 +1,22 @@
 Name: sentinel.rpc
 ListenOn: 0.0.0.0:8080
-Etcd:
-  Hosts:
-  - 127.0.0.1:2379
-  Key: sentinel.rpc
+
+# 开发环境下可注释掉Etcd配置
+#Etcd:
+#  Hosts:
+#  - 127.0.0.1:2379
+#  Key: sentinel.rpc
+
+Redis:
+  Host: 127.0.0.1:6379
+  Type: node
+  # Pass: ""  # 如需密码则取消注释
+  # Tls: false
+
+CommandTimeout: 100  # Redis命令超时时间(毫秒)
+
+L1Cache:
+  Enabled: true
+  TTL: 500  # 本地缓存TTL(毫秒)
+
+Prometheus: true  # 是否启用Prometheus指标
