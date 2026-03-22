@@ -1,0 +1,59 @@
+# 探针端口与 rpc/etc/sentinel.yaml ListenOn 一致（开发规范 4.3）
+# 使用镜像需先构建：docker build -f deploy/docker/Dockerfile -t sentinelgrain/sentinel-rpc:latest .
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-rpc
+  labels:
+    app: sentinel-rpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentinel-rpc
+  template:
+    metadata:
+      labels:
+        app: sentinel-rpc
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        fsGroup: 65532
+      containers:
+        - name: sentinel-rpc
+          image: sentinelgrain/sentinel-rpc:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/app/sentinel-rpc"]
+          args: ["-f", "/app/etc/sentinel.yaml"]
+          ports:
+            - name: grpc
+              containerPort: 8080
+            - name: metrics
+              containerPort: 4000
+          volumeMounts:
+            - name: config
+              mountPath: /app/etc/sentinel.yaml
+              subPath: sentinel.yaml
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: sentinel-rpc-config

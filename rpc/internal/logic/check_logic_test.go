@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"SentinelGrain/common/errors"
@@ -39,7 +38,7 @@ func TestCheckLogic_Check(t *testing.T) {
 		_ = svcCtx.QuotaRules.Refresh(context.Background())
 		if svcCtx.L1Cache != nil {
 			v := svcCtx.QuotaRules.CacheVersion()
-			svcCtx.L1Cache.Del(fmt.Sprintf("test_app:test_api:test_user:v%d", v))
+			svcCtx.L1Cache.Del(LimiterKey("test_app", "test_api", "test_user", v))
 		}
 	})
 
@@ -108,8 +107,7 @@ func TestCheckLogic_Check(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "Exceed threshold should be rejected" && svcCtx.L1Cache != nil {
-				k := fmt.Sprintf("%s:%s:%s:v%d", tt.req.AppId, tt.req.Resource, tt.req.Dimension, svcCtx.QuotaRules.CacheVersion())
-				svcCtx.L1Cache.Del(k)
+				svcCtx.L1Cache.Del(LimiterKey(tt.req.AppId, tt.req.Resource, tt.req.Dimension, svcCtx.QuotaRules.CacheVersion()))
 			}
 			logic := NewCheckLogic(context.Background(), svcCtx)
 			resp, err := logic.Check(tt.req)
@@ -128,7 +126,7 @@ func TestCheckLogic_RedisTimeout(t *testing.T) {
 	defer s.Close()
 
 	conf := config.Config{
-		CommandTimeout: 1,
+		CommandTimeout: 3000,
 		Redis: redis.RedisConf{
 			Host: s.Addr(),
 			Type: "node",

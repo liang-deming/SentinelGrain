@@ -44,12 +44,16 @@ func NewCheckLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckLogic 
 	}
 }
 
+// LimiterKey Redis 滑动窗口与 L1 共用的限流 key（appId:resource:dimension + 配额版本，与 common/quota 规则维度对齐）
+func LimiterKey(appId, resource, dimension string, quotaVersion int64) string {
+	return fmt.Sprintf("%s:%s:%s:v%d", appId, resource, dimension, quotaVersion)
+}
+
 func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 	startTime := time.Now()
 
-	// 构建限流Key；拼入配额版本号，Admin 更新阈值后 L1 不会长期命中旧结果
 	ver := l.svcCtx.QuotaRules.CacheVersion()
-	key := fmt.Sprintf("%s:%s:%s:v%d", in.AppId, in.Resource, in.Dimension, ver)
+	key := LimiterKey(in.AppId, in.Resource, in.Dimension, ver)
 
 	// 先查L1缓存
 	if l.svcCtx.L1Cache != nil {

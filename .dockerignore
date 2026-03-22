@@ -1,0 +1,5 @@
+.git
+**/.git
+*.md
+工作包*.md
+.aider*

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-rpc-config
+  labels:
+    app: sentinel-rpc
+data:
+  sentinel.yaml: |
+    Name: sentinel.rpc
+    ListenOn: 0.0.0.0:8080
+    Mode: dev
+    Redis:
+      Host: redis:6379
+      Type: node
+      Pass: ""
+      Tls: false
+    CommandTimeout: 100
+    QuotaRefreshInterval: 5
+    L1Cache:
+      Enabled: true
+      TTL: 500
+    Prometheus: true
+    Telemetry:
+      Name: sentinel.rpc
+      Endpoint: 0.0.0.0:4000
+      Path: /metrics

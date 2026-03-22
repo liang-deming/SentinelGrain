@@ -148,6 +148,50 @@ func TestWindowSliding(t *testing.T) {
 	assert.Equal(t, threshold-cost, remaining)
 }
 
+func TestEvalSlideWindow_CostGreaterThanOne(t *testing.T) {
+	s := miniredis.RunT(t)
+	defer s.Close()
+	client := redis.New(s.Addr())
+	ctx := context.Background()
+	key := "test:cost-multi"
+	now := time.Now().UnixMilli()
+	window := int64(2000)
+	threshold := int64(5)
+
+	allowed, remaining, err := EvalSlideWindow(ctx, client, key, now, window, threshold, 3)
+	assert.NoError(t, err)
+	assert.True(t, allowed)
+	assert.Equal(t, int64(2), remaining)
+
+	allowed, remaining, err = EvalSlideWindow(ctx, client, key, now+10, window, threshold, 3)
+	assert.NoError(t, err)
+	assert.True(t, allowed)
+	assert.Equal(t, int64(1), remaining)
+
+	allowed, remaining, err = EvalSlideWindow(ctx, client, key, now+20, window, threshold, 3)
+	assert.NoError(t, err)
+	assert.True(t, allowed)
+	assert.Equal(t, int64(0), remaining)
+
+	allowed, remaining, err = EvalSlideWindow(ctx, client, key, now+30, window, threshold, 3)
+	assert.NoError(t, err)
+	assert.False(t, allowed)
+	// 拒绝时 Lua 返回 remaining = threshold - current（未扣减 cost）
+	assert.Equal(t, int64(2), remaining)
+}
+
+func TestEvalSlideWindow_SingleRequestCostExceedsThreshold(t *testing.T) {
+	s := miniredis.RunT(t)
+	defer s.Close()
+	client := redis.New(s.Addr())
+	ctx := context.Background()
+	now := time.Now().UnixMilli()
+
+	allowed, _, err := EvalSlideWindow(ctx, client, "k", now, 1000, 5, 6)
+	assert.NoError(t, err)
+	assert.False(t, allowed)
+}
+
 func TestPreloadScript(t *testing.T) {
 	// 创建mock Redis服务器
 	s := miniredis.RunT(t)

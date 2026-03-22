@@ -1,0 +1,18 @@
+# 本地联调：docker compose -f deploy/docker/docker-compose.yml up --build
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  sentinel-rpc:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    ports:
+      - "8080:8080"
+      - "4000:4000"
+    environment:
+      SENTINEL_REDIS_HOST: redis:6379
+    depends_on:
+      - redis

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-rpc
+  labels:
+    app: sentinel-rpc
+spec:
+  selector:
+    app: sentinel-rpc
+  ports:
+    - name: grpc
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 4000
+      targetPort: 4000
