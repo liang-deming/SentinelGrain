@@ -75,7 +75,7 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 	// 执行Redis滑动窗口判定
 	now := time.Now().UnixMilli()
 	windowMs := DefaultPeriod * 1000 // 转换为毫秒
-	threshold := DefaultThreshold    // TODO: 从规则表读取
+	threshold := DefaultThreshold    // MVP选项：使用全局默认阈值(100/s)作为兜底
 
 	allowed, remaining, err := algorithm.EvalSlideWindow(
 		redisCtx,
