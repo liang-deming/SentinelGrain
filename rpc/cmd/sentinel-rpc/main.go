@@ -28,6 +28,7 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
 
+	// P3：定时全量 Refresh；0 或未配置时使用 5s，与 rpc/etc 注释一致
 	intervalSec := c.QuotaRefreshInterval
 	if intervalSec <= 0 {
 		intervalSec = 5

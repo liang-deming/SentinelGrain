@@ -11,7 +11,10 @@ Redis:
 
 CommandTimeout: 100  # Redis命令超时时间(毫秒)
 
-# 配额规则热更：启动全量加载 + 周期刷新（秒）
+# --- 动态配额（规范 §5 / 工作包 P3）---
+# QuotaRefreshInterval：仅「定时全量 Refresh」周期（秒），与 Apollo/Nacos 无关。
+# 默认值 5；设为 0 时进程内按 5 处理（见 rpc/cmd/sentinel-rpc/main.go）。
+# 规则变更生效延迟上界 ≈ QuotaRefreshInterval + 单次 Refresh 的 Redis 耗时（通常毫秒级）。
 QuotaRefreshInterval: 5
 
 L1Cache:

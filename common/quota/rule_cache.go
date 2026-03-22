@@ -80,8 +80,8 @@ func (c *RuleCache) Refresh(ctx context.Context) error {
 	return nil
 }
 
-// StartPeriodicRefresh 定时热更（混合模式：启动全量加载 + 周期刷新）。
-// TODO: 可接入 Redis Pub/Sub 或 Admin 主动通知，使 Save 后立即 Refresh，降低传播延迟。
+// StartPeriodicRefresh 定时全量 Refresh（工作包 P3 唯一热更路径）。失败时保留上一轮内存表。
+// Pub/Sub、配置中心监听不在 P3 范围内。
 func (c *RuleCache) StartPeriodicRefresh(interval time.Duration) {
 	go func() {
 		ticker := time.NewTicker(interval)
