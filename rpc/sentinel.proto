@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package sentinel;
-option go_package = "./pb";
+option go_package = "SentinelGrain/rpc/pb;pb";
 
 message CheckRequest {
     string app_id = 1;      // 应用标识
