@@ -12,10 +12,14 @@ type L1Cache struct {
 }
 
 // NewL1Cache 创建本地缓存实例
-func NewL1Cache(ttl time.Duration) *L1Cache {
-	return &L1Cache{
-		cache: collection.NewCache(ttl),
+func NewL1Cache(ttl time.Duration) (*L1Cache, error) {
+	cache, err := collection.NewCache(ttl)
+	if err != nil {
+		return nil, err
 	}
+	return &L1Cache{
+		cache: cache,
+	}, nil
 }
 
 // CheckResult 限流检查结果

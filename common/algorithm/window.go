@@ -9,6 +9,11 @@ import (
 //go:embed window.lua
 var slideWindowScript string
 
+// GetSlideWindowScript 获取滑动窗口Lua脚本
+func GetSlideWindowScript() string {
+	return slideWindowScript
+}
+
 // EvalSlideWindow 执行滑动窗口限流判定
 func EvalSlideWindow(ctx context.Context, redis *redis.Redis, key string, nowMs, windowMs, threshold, cost int64) (allowed bool, remaining int64, err error) {
 	// 执行Lua脚本
