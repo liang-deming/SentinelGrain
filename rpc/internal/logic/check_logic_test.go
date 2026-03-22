@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"sync"
 
@@ -63,12 +64,6 @@ func TestCheckLogic_Check(t *testing.T) {
 		assert.Equal(t, errors.RuleNotFound, resp.Reason)
 	})
 
-	// 清理旧规则和缓存
-	ruleTable = sync.Map{}
-	if svcCtx.L1Cache != nil {
-		svcCtx.L1Cache.Del("test_app:test_api:test_user")
-	}
-
 	tests := []struct {
 		name        string
 		req         *pb.CheckRequest
@@ -112,6 +107,11 @@ func TestCheckLogic_Check(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// 超阈值用例需绕过 L1 中前两次请求写入的放行结果
+			if tt.name == "Exceed threshold should be rejected" && svcCtx.L1Cache != nil {
+				key := fmt.Sprintf("%s:%s:%s", tt.req.AppId, tt.req.Resource, tt.req.Dimension)
+				svcCtx.L1Cache.Del(key)
+			}
 			logic := NewCheckLogic(context.Background(), svcCtx)
 			resp, err := logic.Check(tt.req)
 			

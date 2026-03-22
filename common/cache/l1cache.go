@@ -40,3 +40,11 @@ func (c *L1Cache) GetResult(key string) (*CheckResult, bool) {
 func (c *L1Cache) SetResult(key string, result *CheckResult) {
 	c.cache.Set(key, result)
 }
+
+// Del 删除指定 key 的缓存项（测试或需要绕过陈旧命中时使用）
+func (c *L1Cache) Del(key string) {
+	if c == nil || c.cache == nil {
+		return
+	}
+	c.cache.Del(key)
+}
