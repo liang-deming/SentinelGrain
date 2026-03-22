@@ -1,0 +1,55 @@
+syntax = "v1"
+
+info (
+	title: "SentinelGrain Admin API"
+	desc: "配额管理后台接口"
+	author: "team"
+	version: "v1"
+)
+
+type (
+	QuotaRule {
+		AppId      string `json:"appId"`      // 应用标识
+		Resource   string `json:"resource"`    // API Path 或 Service Name
+		Threshold  int64  `json:"threshold"`   // 阈值
+		Period     int64  `json:"period"`      // 窗口期(秒)
+		UpdateTime int64  `json:"updateTime"`  // 更新时间
+	}
+
+	// 创建/更新配额规则
+	SaveQuotaReq {
+		Rule QuotaRule `json:"rule"`
+	}
+
+	SaveQuotaResp {
+		Code int64  `json:"code"`
+		Msg  string `json:"msg"`
+	}
+
+	// 查询配额规则
+	ListQuotaReq {
+		AppId    string `form:"appId,optional"`    // 可选过滤
+		Resource string `form:"resource,optional"`  // 可选过滤
+		Page     int64  `form:"page,default=1"`
+		Size     int64  `form:"size,default=20"`
+	}
+
+	ListQuotaResp {
+		Total int64       `json:"total"`
+		Rules []QuotaRule `json:"rules"`
+	}
+)
+
+@server(
+	prefix: /api/v1
+	group: quota
+)
+service admin {
+	@doc "保存配额规则"
+	@handler SaveQuota
+	post /quota (SaveQuotaReq) returns (SaveQuotaResp)
+	
+	@doc "查询配额规则列表"
+	@handler ListQuota
+	get /quota (ListQuotaReq) returns (ListQuotaResp)
+}
