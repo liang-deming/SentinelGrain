@@ -1,3 +1,12 @@
 Name: admin
 Host: 0.0.0.0
 Port: 8888
+
+# 与 rpc/etc/sentinel.yaml 指向同一 Redis，保证 Admin 与 Check 共用配额「真相」
+Redis:
+  Host: 127.0.0.1:6379
+  Type: node
+  Pass: ""
+  Tls: false
+
+RedisCommandTimeout: 3000

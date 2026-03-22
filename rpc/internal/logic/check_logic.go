@@ -21,24 +21,6 @@ const (
 	DefaultReject = true
 )
 
-// QuotaRule 内存规则表项
-type QuotaRule struct {
-	Threshold int64
-	Period   int64
-}
-
-// SetRule 更新规则表
-func SetRule(appId, resource string, threshold, period int64) {
-	ruleKey := fmt.Sprintf("%s:%s", appId, resource)
-	ruleTable.Store(ruleKey, &QuotaRule{
-		Threshold: threshold,
-		Period:   period,
-	})
-}
-
-// ruleTable 内存规则表 - 按 {appId}:{resource} 匹配
-var ruleTable = sync.Map{}
-
 var (
 	// 对象池，用于复用CheckResult
 	resultPool = sync.Pool{
@@ -64,9 +46,10 @@ func NewCheckLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckLogic 
 
 func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 	startTime := time.Now()
-	
-	// 构建限流Key
-	key := fmt.Sprintf("%s:%s:%s", in.AppId, in.Resource, in.Dimension)
+
+	// 构建限流Key；拼入配额版本号，Admin 更新阈值后 L1 不会长期命中旧结果
+	ver := l.svcCtx.QuotaRules.CacheVersion()
+	key := fmt.Sprintf("%s:%s:%s:v%d", in.AppId, in.Resource, in.Dimension, ver)
 
 	// 先查L1缓存
 	if l.svcCtx.L1Cache != nil {
@@ -103,13 +86,10 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 	redisCtx, cancel := context.WithTimeout(l.ctx, redisCmdTimeout)
 	defer cancel()
 
-	// 查找限流规则
-	ruleKey := fmt.Sprintf("%s:%s", in.AppId, in.Resource)
+	// 查找限流规则（与 Admin 写入 Redis 的规则一致，经 QuotaRules 全量/定时加载）
 	var threshold, period int64
-	if rule, ok := ruleTable.Load(ruleKey); ok {
-		r := rule.(*QuotaRule)
-		threshold = r.Threshold
-		period = r.Period
+	if th, p, ok := l.svcCtx.QuotaRules.Get(in.AppId, in.Resource); ok {
+		threshold, period = th, p
 	} else {
 		// MVP选项：无规则时默认拒绝
 		allowed := !DefaultReject
@@ -163,7 +143,7 @@ func (l *CheckLogic) Check(in *pb.CheckRequest) (*pb.CheckResponse, error) {
 	}
 
 	// 缓存结果到L1 (仅缓存成功的Redis响应)
-	if err == nil && l.svcCtx.L1Cache != nil {
+	if l.svcCtx.L1Cache != nil {
 		result := resultPool.Get().(*cache.CheckResult)
 		result.Allowed = allowed
 		result.Remaining = remaining

@@ -1,13 +1,12 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.9.2
-
 package quota
 
 import (
 	"context"
+	"time"
 
 	"SentinelGrain/api/internal/svc"
 	"SentinelGrain/api/internal/types"
+	"SentinelGrain/common/quota"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -18,7 +17,6 @@ type ListQuotaLogic struct {
 	svcCtx *svc.ServiceContext
 }
 
-// 查询配额规则列表
 func NewListQuotaLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListQuotaLogic {
 	return &ListQuotaLogic{
 		Logger: logx.WithContext(ctx),
@@ -28,7 +26,44 @@ func NewListQuotaLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListQuo
 }
 
 func (l *ListQuotaLogic) ListQuota(req *types.ListQuotaReq) (resp *types.ListQuotaResp, err error) {
-	// todo: add your logic here and delete this line
+	timeout := time.Duration(l.svcCtx.Config.RedisCommandTimeout) * time.Millisecond
+	if timeout <= 0 {
+		timeout = 3 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(l.ctx, timeout)
+	defer cancel()
 
-	return
+	page := req.Page
+	if page < 1 {
+		page = 1
+	}
+	size := req.Size
+	if size < 1 {
+		size = 20
+	}
+	if size > 100 {
+		size = 100
+	}
+
+	rules, total, err := l.svcCtx.QuotaRepo.List(ctx, quota.ListQuery{
+		AppId:    req.AppId,
+		Resource: req.Resource,
+		Page:     page,
+		Size:     size,
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]types.QuotaRule, 0, len(rules))
+	for i := range rules {
+		r := &rules[i]
+		out = append(out, types.QuotaRule{
+			AppId:      r.AppId,
+			Resource:   r.Resource,
+			Threshold:  r.Threshold,
+			Period:     r.Period,
+			UpdateTime: r.UpdateTime,
+		})
+	}
+	return &types.ListQuotaResp{Total: int64(total), Rules: out}, nil
 }

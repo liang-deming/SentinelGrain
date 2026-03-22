@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"SentinelGrain/rpc/internal/config"
 	"SentinelGrain/rpc/internal/server"
@@ -26,6 +27,12 @@ func main() {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
+
+	intervalSec := c.QuotaRefreshInterval
+	if intervalSec <= 0 {
+		intervalSec = 5
+	}
+	ctx.QuotaRules.StartPeriodicRefresh(time.Duration(intervalSec) * time.Second)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		pb.RegisterSentinelServer(grpcServer, server.NewSentinelServer(ctx))

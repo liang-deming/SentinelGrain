@@ -11,6 +11,9 @@ Redis:
 
 CommandTimeout: 100  # Redis命令超时时间(毫秒)
 
+# 配额规则热更：启动全量加载 + 周期刷新（秒）
+QuotaRefreshInterval: 5
+
 L1Cache:
   Enabled: true     # 启用本地缓存
   TTL: 500         # 本地缓存TTL(毫秒)
