@@ -36,8 +36,13 @@ func TestCheckLogic_Check(t *testing.T) {
 	// 创建服务上下文
 	svcCtx := svc.NewServiceContext(conf)
 
-	// 清理旧规则
-	ruleTable = sync.Map{}
+	// 每个测试前重置状态
+	t.Cleanup(func() {
+		ruleTable = sync.Map{}
+		if svcCtx.L1Cache != nil {
+			svcCtx.L1Cache.Del("test_app:test_api:test_user")
+		}
+	})
 	
 	// 设置测试规则
 	SetRule("test_app", "test_api", 5, 1) // 每秒5个请求
@@ -57,6 +62,12 @@ func TestCheckLogic_Check(t *testing.T) {
 		assert.False(t, resp.Allowed)
 		assert.Equal(t, errors.RuleNotFound, resp.Reason)
 	})
+
+	// 清理旧规则和缓存
+	ruleTable = sync.Map{}
+	if svcCtx.L1Cache != nil {
+		svcCtx.L1Cache.Del("test_app:test_api:test_user")
+	}
 
 	tests := []struct {
 		name        string
