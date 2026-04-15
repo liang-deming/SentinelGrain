@@ -1,5 +1,7 @@
 # SentinelGrain
 
+[English](README.md) | [日本語](README.ja.md) | [中文](README.zh.md)
+
 SentinelGrain は、Go と go-zero で実装された軽量なクォータ/レート制御サービスです。
 主な機能は次のとおりです。
 

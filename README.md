@@ -1,5 +1,7 @@
 # SentinelGrain
 
+[English](README.md) | [日本語](README.ja.md) | [中文](README.zh.md)
+
 SentinelGrain is a lightweight quota/rate-control service built with Go and go-zero.
 It provides:
 
