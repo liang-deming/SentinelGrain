@@ -6,11 +6,12 @@ import (
 )
 
 type Config struct {
-	zrpc.RpcServerConf
-	Redis                 redis.RedisConf // Redis配置
-	CommandTimeout        int             // Redis命令超时时间(毫秒)
-	L1Cache               L1Config        // 本地缓存配置
-	Prometheus            bool            // 是否启用Prometheus指标
+	// 须具名，勿嵌入：嵌入 zrpc.RpcServerConf 时与 BizRedis 会在 go-zero conf 中触发 conflict key redis。
+	// 配置须使用顶层键 `rpc:` 嵌套（勿依赖 inherit 扁平填充，conf.Load 与 zrpc.MustNewServer 行为不一致）。
+	Rpc zrpc.RpcServerConf `json:"rpc"`
+	BizRedis              redis.RedisConf
+	CommandTimeout        int // Redis命令超时时间(毫秒)
+	L1Cache               L1Config
 	// QuotaRefreshInterval 秒；定时全量从 Redis 加载规则到 RuleCache（P3）。0 时 main 使用默认 5。
 	QuotaRefreshInterval int `json:",optional"`
 }

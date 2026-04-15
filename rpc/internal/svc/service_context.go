@@ -21,7 +21,7 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	redisClient := redis.MustNewRedis(c.Redis)
+	redisClient := redis.MustNewRedis(c.BizRedis)
 
 	var l1cache *cache.L1Cache
 	if c.L1Cache.Enabled {

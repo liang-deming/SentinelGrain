@@ -35,15 +35,15 @@ func main() {
 	}
 	ctx.QuotaRules.StartPeriodicRefresh(time.Duration(intervalSec) * time.Second)
 
-	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+	s := zrpc.MustNewServer(c.Rpc, func(grpcServer *grpc.Server) {
 		pb.RegisterSentinelServer(grpcServer, server.NewSentinelServer(ctx))
 
-		if c.Mode == service.DevMode || c.Mode == service.TestMode {
+		if c.Rpc.Mode == service.DevMode || c.Rpc.Mode == service.TestMode {
 			reflection.Register(grpcServer)
 		}
 	})
 	defer s.Stop()
 
-	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
+	fmt.Printf("Starting rpc server at %s...\n", c.Rpc.ListenOn)
 	s.Start()
 }

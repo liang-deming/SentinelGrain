@@ -1,9 +1,13 @@
-Name: sentinel.rpc
-ListenOn: 0.0.0.0:8080
+rpc:
+  Name: sentinel.rpc
+  ListenOn: 0.0.0.0:8080
+  Mode: dev  # 开发环境模式，禁用服务发现
+  Telemetry:
+    Name: sentinel.rpc
+    Endpoint: 0.0.0.0:4000
+    Path: /metrics
 
-Mode: dev  # 开发环境模式，禁用服务发现
-
-Redis:
+BizRedis:
   Host: 127.0.0.1:6379
   Type: node
   Pass: ""  # Redis密码
@@ -20,9 +24,3 @@ QuotaRefreshInterval: 5
 L1Cache:
   Enabled: true     # 启用本地缓存
   TTL: 500         # 本地缓存TTL(毫秒)
-
-Prometheus: true    # 启用Prometheus指标收集
-Telemetry:
-  Name: sentinel.rpc
-  Endpoint: 0.0.0.0:4000
-  Path: /metrics

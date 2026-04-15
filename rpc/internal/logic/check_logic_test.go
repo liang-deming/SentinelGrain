@@ -20,14 +20,14 @@ func TestCheckLogic_Check(t *testing.T) {
 	defer s.Close()
 
 	conf := config.Config{
+		BizRedis: redis.RedisConf{
+			Host: s.Addr(),
+			Type: "node",
+		},
 		CommandTimeout: 100,
 		L1Cache: config.L1Config{
 			Enabled: true,
 			TTL:     500,
-		},
-		Redis: redis.RedisConf{
-			Host: s.Addr(),
-			Type: "node",
 		},
 	}
 
@@ -126,11 +126,11 @@ func TestCheckLogic_RedisTimeout(t *testing.T) {
 	defer s.Close()
 
 	conf := config.Config{
-		CommandTimeout: 3000,
-		Redis: redis.RedisConf{
+		BizRedis: redis.RedisConf{
 			Host: s.Addr(),
 			Type: "node",
 		},
+		CommandTimeout: 3000,
 	}
 
 	svcCtx := svc.NewServiceContext(conf)
