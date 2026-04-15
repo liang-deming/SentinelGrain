@@ -1,9 +1,14 @@
 # 容器内模板；entrypoint 将 __REDIS_HOST__ 替换为环境变量 SENTINEL_REDIS_HOST（默认 redis:6379）
-Name: sentinel.rpc
-ListenOn: 0.0.0.0:8080
-Mode: dev
+rpc:
+  Name: sentinel.rpc
+  ListenOn: 0.0.0.0:8080
+  Mode: dev
+  Telemetry:
+    Name: sentinel.rpc
+    Endpoint: 0.0.0.0:4000
+    Path: /metrics
 
-Redis:
+BizRedis:
   Host: __REDIS_HOST__
   Type: node
   Pass: ""
@@ -15,9 +20,3 @@ QuotaRefreshInterval: 5
 L1Cache:
   Enabled: true
   TTL: 500
-
-Prometheus: true
-Telemetry:
-  Name: sentinel.rpc
-  Endpoint: 0.0.0.0:4000
-  Path: /metrics

@@ -1,5 +1,6 @@
 # 探针端口与 rpc/etc/sentinel.yaml ListenOn 一致（开发规范 4.3）
-# 使用镜像需先构建：docker build -f deploy/docker/Dockerfile -t sentinelgrain/sentinel-rpc:latest .
+# 本地 Docker Desktop K8s：勿只打 :latest 后 rollout——节点常沿用旧 digest。
+# 请用 ./deploy/k8s/deploy-local-image.sh（唯一 tag）或 kubectl set image 指向新 tag。
 apiVersion: apps/v1
 kind: Deployment
 metadata:

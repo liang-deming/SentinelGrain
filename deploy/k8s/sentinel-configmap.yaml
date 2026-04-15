@@ -6,10 +6,15 @@ metadata:
     app: sentinel-rpc
 data:
   sentinel.yaml: |
-    Name: sentinel.rpc
-    ListenOn: 0.0.0.0:8080
-    Mode: dev
-    Redis:
+    rpc:
+      Name: sentinel.rpc
+      ListenOn: 0.0.0.0:8080
+      Mode: dev
+      Telemetry:
+        Name: sentinel.rpc
+        Endpoint: 0.0.0.0:4000
+        Path: /metrics
+    BizRedis:
       Host: redis:6379
       Type: node
       Pass: ""
@@ -19,8 +24,3 @@ data:
     L1Cache:
       Enabled: true
       TTL: 500
-    Prometheus: true
-    Telemetry:
-      Name: sentinel.rpc
-      Endpoint: 0.0.0.0:4000
-      Path: /metrics

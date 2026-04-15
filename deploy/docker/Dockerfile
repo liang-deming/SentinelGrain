@@ -3,6 +3,10 @@
 #   docker build -f deploy/docker/Dockerfile -t sentinelgrain/sentinel-rpc:latest .
 
 FROM golang:1.24-alpine AS builder
+# 网络不稳或访问 proxy.golang.org 困难时可覆盖，例如：
+#   docker compose build --build-arg GOPROXY=https://goproxy.cn,direct
+ARG GOPROXY=https://proxy.golang.org,direct
+ENV GOPROXY=${GOPROXY}
 RUN apk add --no-cache git ca-certificates
 WORKDIR /src
 COPY go.mod go.sum ./
